@@ -9,33 +9,13 @@ const kindWordsList = [
     "holy", "noble", "smart", "smile", "sweet", "trust", "brave", "charm", "cheer"
 ];
 
-// ৩. লোকাল JSON ফাইল থেকে শব্দ লোড করার মেকানিজম
-let baselineDictionary = [];
+// ৩. ইন-বিল্ট ডাটাবেজ (যা কোনো ব্রাউজার এরর ছাড়াই ১০০% নিশ্চিতভাবে রান করবে)
+const baselineDictionary = [
+    "about", "above", "actor", "acute", "admit", "adopt", "adult", "after", "again", "agent", "agree", "ahead", "alarm", "album", "alert", "alike", "alive", "allow", "alone", "along", "alter", "among", "anger", "angle", "angry", "apart", "apple", "apply", "arena", "argue", "arise", "array", "arrow", "aside", "asset", "audio", "audit", "avoid", "award", "aware", "awful", "back", "bad", "ball", "bank", "base", "basic", "basis", "beach", "bear", "beat", "beauty", "become", "before", "began", "begin", "begun", "behind", "being", "below", "bench", "best", "better", "beyond", "bible", "big", "bike", "bill", "bird", "birth", "black", "blade", "blame", "blind", "block", "blood", "board", "boast", "body", "bold", "bomb", "bond", "bone", "bonus", "book", "boom", "boost", "boot", "border", "boss", "both", "bother", "bottle", "bottom", "bought", "bound", "bowl", "box", "boy", "brain", "brake", "branch", "brand", "brave", "bread", "break", "breast", "breath", "brick", "bride", "bridge", "brief", "bright", "bring", "broad", "broke", "broken", "brother", "brought", "brown", "brush", "budget", "build", "built", "bullet", "bunch", "burden", "bureau", "burn", "burst", "bus", "bush", "business", "busy", "but", "buyer", "cabin", "cable", "cake", "call", "calm", "came", "camera", "camp", "campus", "can", "cancel", "cancer", "candle", "cane", "cap", "care", "career", "cargo", "carpet", "carry", "cart", "case", "cash", "cast", "cat", "catch", "cause", "cave", "cell", "cent", "chain", "chair", "chart", "chase", "cheap", "cheat", "check", "cheek", "cheer", "cheese", "chef", "child", "choice", "choose", "chose", "chosen", "church", "cigar", "cite", "city", "civil", "claim", "class", "clay", "clean", "clear", "clearly", "clerk", "clever", "click", "client", "cliff", "climb", "clinic", "clip", "clock", "close", "closed", "cloth", "cloud", "club", "clue", "coach", "coal", "coast", "coat", "code", "coin", "cold", "color", "come", "cook", "cool", "copy", "coral", "cord", "core", "corn", "cost", "couch", "cough", "could", "count", "court", "cover", "cow", "coward", "crack", "craft", "crane", "crash", "crate", "crazy", "cream", "create", "crew", "crime", "crop", "cross", "crowd", "crown", "crucial", "crude", "cruel", "cruise", "crumb", "crush", "crust", "cry", "crystal", "cube", "cubic", "cucumber", "cuddle", "cue", "cuff", "cult", "culture", "cup", "cupboard", "cure", "curfew", "curious", "curl", "current", "cursor", "curtain", "curve", "cushion", "custom", "customer", "cut", "cycle", "cylinder", "item", "site", "time", "game", "test", "step", "jumble", "universe", "neon", "data", "star", "moon", "sun", "wind", "fire", "water", "earth", "gold", "fish", "bird", "lion", "road", "door", "dark", "light", "blue", "red", "green", "onset", "ties", "nest", "pest", "spin", "sine"
+];
 
-async function loadWordsFromJSON() {
-    try {
-        const response = await fetch('./words.json');
-        if (!response.ok) throw new Error("Failed to load JSON");
-        baselineDictionary = await response.json();
-        console.log("Local words.json database linked perfectly!");
-    } catch (error) {
-        console.error("Backup trigger active due to fetch error:", error);
-        // ব্যাকআপ ডাটাবেজ যদি কোনো কারণে JSON লোড না হয়
-        baselineDictionary = ["site", "item", "time", "game", "test", "step", "jumble", "universe", "love", "life"];
-    }
-}
-
-// ৪. ডিকশনারি API ভ্যালিডেশন (২ মিলিয়ন শব্দের ব্যাকএন্ড চেক)
-async function verifyWordViaAPI(word) {
-    try {
-        const response = await fetch(`https://dictionaryapi.dev{word}`);
-        return response.ok;
-    } catch {
-        return false;
-    }
-}
-
-function getLocalJumbleMatches(userInput, targetLength) {
+// ৪. জুম্বল শব্দ মেলানোর পিওর অ্যালগরিদম
+function getJumbleMatches(userInput, targetLength) {
     const inputCount = {};
     for (let char of userInput.toLowerCase()) {
         inputCount[char] = (inputCount[char] || 0) + 1;
@@ -52,6 +32,7 @@ function getLocalJumbleMatches(userInput, targetLength) {
     });
 }
 
+// ৫. স্লাং সনাক্তকরণ লজিক
 function categorizeOffensiveWords(userInput) {
     const lowerInput = userInput.toLowerCase().replace(/\s+/g, '');
     const detectedHardcore = [];
@@ -68,8 +49,8 @@ function categorizeOffensiveWords(userInput) {
     return { hardcore: detectedHardcore, regular: detectedRegularSlang };
 }
 
-// ৫. 'SOLVE IT' বাটন ট্রিগার
-document.getElementById("solveBtn").addEventListener("click", async function() {
+// ৬. 'SOLVE IT' বাটন ট্রিগার এবং ইনস্ট্যান্ট স্ক্রিন রেন্ডারিং
+document.getElementById("solveBtn").addEventListener("click", function() {
     let inputVal = document.getElementById("jumbleInput").value.trim().toLowerCase();
     
     if (inputVal === "") {
@@ -77,59 +58,54 @@ document.getElementById("solveBtn").addEventListener("click", async function() {
         return;
     }
 
-    if (inputVal.length > 20) {
-        inputVal = inputVal.substring(0, 20);
+    // কোড লেভেলেও ১৭ অক্ষরের অতিরিক্ত অংশ ট্রিম করার সিকিউরিটি রাখা হলো
+    if (inputVal.length > 17) {
+        inputVal = inputVal.substring(0, 17);
         document.getElementById("jumbleInput").value = inputVal;
     }
 
     const resultsContainer = document.getElementById("resultsContainer");
-    resultsContainer.innerHTML = "<div style='color: #00ff00; font-size: 1.1rem; font-weight: bold;'>Scanning Global 2M+ Words Database...</div>"; 
-    
-    let validWordsFound = [];
-    for (let length = 7; length >= 2; length--) {
-        const localMatches = getLocalJumbleMatches(inputVal, length);
-        validWordsFound = validWordsFound.concat(localMatches);
-    }
-
-    const apiVerificationPromises = validWordsFound.map(async (word) => {
-        const isValid = await verifyWordViaAPI(word);
-        return isValid ? word : null;
-    });
-
-    const verifiedResults = (await Promise.all(apiVerificationPromises)).filter(word => word !== null);
-    resultsContainer.innerHTML = "";
+    resultsContainer.innerHTML = ""; 
 
     const segregation = { kind: [], good: [] };
-    verifiedResults.forEach(word => {
-        if (kindWordsList.includes(word)) {
-            segregation.kind.push(word);
-        } else {
-            segregation.good.push(word);
-        }
-    });
+
+    for (let length = 7; length >= 2; length--) {
+        const localMatches = getJumbleMatches(inputVal, length);
+        localMatches.forEach(word => {
+            if (kindWordsList.includes(word)) {
+                segregation.kind.push(word);
+            } else {
+                segregation.good.push(word);
+            }
+        });
+    }
 
     let contextAdded = false;
 
+    // ✨ KIND WORDS সেকশন রেন্ডার
     if (segregation.kind.length > 0) {
         contextAdded = true;
+        const uniqueKind = [...new Set(segregation.kind)];
         resultsContainer.innerHTML += `
             <div class="word-group">
-                <div class="group-title" style="color: #00ffff;">✨ KIND & POSITIVE WORDS</div>
-                <div>${[...new Set(segregation.kind)].map(w => `<span class="word-box" style="border-color: #00ffff; color: #00ffff;">${w}</span>`).join('')}</div>
+                <div class="group-title" style="color: #00ffff; margin-top: 15px;">✨ KIND & POSITIVE WORDS</div>
+                <div>${uniqueKind.map(w => `<span class="word-box" style="border-color: #00ffff; color: #00ffff;">${w}</span>`).join('')}</div>
             </div>`;
     }
 
+    // 🟢 GOOD WORDS সেকশন রেন্ডার
     if (segregation.good.length > 0) {
         contextAdded = true;
+        const uniqueGood = [...new Set(segregation.good)];
         resultsContainer.innerHTML += `
             <div class="word-group">
-                <div class="group-title" style="color: #00ff00;">🟢 GOOD & STANDARD WORDS (2-7 Letters)</div>
-                <div>${[...new Set(segregation.good)].map(w => `<span class="word-box">${w}</span>`).join('')}</div>
+                <div class="group-title" style="color: #00ff00; margin-top: 15px;">🟢 GOOD & STANDARD WORDS (2-7 Letters)</div>
+                <div>${uniqueGood.map(w => `<span class="word-box">${w}</span>`).join('')}</div>
             </div>`;
     }
 
     if (!contextAdded) {
-        resultsContainer.innerHTML = `<span style="color: #555; font-size: 0.9rem;">No meaningful words (2-7 letters) could be formed.</span>`;
+        resultsContainer.innerHTML = `<div style="color: #555; font-size: 0.9rem; margin-top: 15px;">No meaningful words (2-7 letters) could be formed from these letters.</div>`;
     }
 
     // স্লাং এবং হার্ডকোর স্লাং রেন্ডারিং
@@ -152,6 +128,3 @@ document.getElementById("solveBtn").addEventListener("click", async function() {
         offensiveContainer.innerHTML = `<span style="color: #555; font-size: 0.9rem;">Clean input. No offensive words detected.</span>`;
     }
 });
-
-// পেজ লোড হওয়ার সাথে সাথে লোকাল JSON ফাইলটি মেমোরিতে রিড হবে
-window.addEventListener('DOMContentLoaded', loadWordsFromJSON);
