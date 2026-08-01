@@ -2,230 +2,199 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Word Jumble Solver Pro - Neon Edition</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Word Jumble Solver Pro</title>
     <style>
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #0d1117; 
+            background-color: #0b0c10;
             color: #ffffff;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             margin: 0;
             padding: 0;
             display: flex;
             flex-direction: column;
+            align-items: center;
             min-height: 100vh;
         }
-        .main-layout {
+
+        /* ডেক্সটপ ও মোবাইলের জন্য দুই পাশে পারফেক্ট সাইজ ও মার্জিন */
+        .page-container {
+            width: 100%;
+            max-width: 900px; /* ডেক্সটপে দুই পাশে সুন্দর জায়গা রাখবে */
+            padding: 15px;
+            box-sizing: border-box;
             display: flex;
-            flex: 1;
-            padding: 20px;
-            gap: 20px;
-        }
-        .ad-sidebar {
-            width: 160px;
-            background-color: #161b22;
-            border: 2px dashed #39ff14; 
-            display: flex;
+            flex-direction: column;
             align-items: center;
+        }
+
+        /* বিজ্ঞাপনের কন্টেইনার স্টাইল */
+        .ad-container {
+            width: 100%;
+            display: flex;
             justify-content: center;
-            color: #8b949e;
-            font-size: 14px;
-            text-align: center;
-            border-radius: 8px;
-            box-shadow: 0 0 10px rgba(57, 255, 20, 0.2);
-        }
-        .game-area {
-            flex: 1;
-            background: #161b22;
-            border-radius: 8px;
-            padding: 30px;
-            box-shadow: 0 4px 20px rgba(57, 255, 20, 0.1);
-            border: 1px solid #30363d;
+            align-items: center;
+            margin: 15px 0;
             text-align: center;
         }
-        h1 { 
-            color: #39ff14; 
-            text-shadow: 0 0 10px #39ff14, 0 0 20px #39ff14; 
-            margin-bottom: 5px; 
-            font-size: 32px; 
+
+        /* মেইন গেম/টুল এরিয়া */
+        .main-content {
+            width: 100%;
+            background: #11141a;
+            border: 2px solid #00ff00;
+            box-shadow: 0 0 15px rgba(0, 255, 0, 0.2);
+            border-radius: 10px;
+            padding: 25px;
+            box-sizing: border-box;
+            text-align: center;
+        }
+
+        /* আপনার আগের নিয়ন টাইটেল */
+        h1 {
+            color: #00ff00;
+            text-shadow: 0 0 10px #00ff00;
+            font-size: 2rem;
+            margin-bottom: 5px;
             text-transform: uppercase;
-            letter-spacing: 2px;
         }
-        .subtitle { 
-            color: #8b949e; 
-            margin-bottom: 25px; 
-            font-size: 15px; 
-        }
-        .input-group {
-            max-width: 500px;
-            margin: 0 auto 20px auto;
-            display: flex;
-            gap: 10px;
-        }
-        input {
-            flex: 1;
-            padding: 12px 15px;
-            font-size: 18px;
-            background-color: #0d1117;
-            border: 2px solid #30363d;
-            border-radius: 4px;
-            color: #39ff14; 
-            outline: none;
-            text-shadow: 0 0 5px rgba(57, 255, 20, 0.5);
-            transition: border-color 0.2s, box-shadow 0.2s;
-        }
-        input:focus { 
-            border-color: #39ff14; 
-            box-shadow: 0 0 10px rgba(57, 255, 20, 0.5);
-        }
-        button {
-            background-color: #0d1117;
-            color: #39ff14;
-            border: 2px solid #39ff14;
-            padding: 12px 25px;
-            font-size: 16px;
-            font-weight: bold;
-            border-radius: 4px;
-            cursor: pointer;
-            text-transform: uppercase;
-            box-shadow: 0 0 10px rgba(57, 255, 20, 0.3);
-            transition: all 0.2s ease;
-        }
-        button:hover { 
-            background-color: #39ff14;
-            color: #0d1117;
-            box-shadow: 0 0 20px #39ff14;
-        }
-        #results {
-            margin-top: 25px;
-            background: #0d1117;
-            padding: 20px;
-            border-radius: 6px;
-            border: 1px solid #30363d;
-            display: none;
-            text-align: left;
-        }
-        .word-group {
+
+        p.subtitle {
+            color: #aaa;
+            font-size: 0.9rem;
             margin-bottom: 20px;
-            background: #161b22;
-            padding: 15px;
-            border-radius: 4px;
-            border: 1px solid #30363d;
         }
-        .word-group h4 {
-            margin: 0 0 10px 0;
-            color: #39ff14;
-            border-bottom: 2px solid #39ff14;
-            padding-bottom: 5px;
-            font-size: 16px;
-        }
-        .word-list {
+
+        /* ইনপুট ও বাটন লেআউট */
+        .input-group {
             display: flex;
-            flex-wrap: wrap;
+            justify-content: center;
             gap: 10px;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
         }
-        .word-item {
-            display: inline-block;
-            background: #0d1117;
-            padding: 6px 12px;
-            margin: 2px;
-            border-radius: 4px;
-            color: #39ff14; 
-            font-size: 15px;
+
+        input[type="text"] {
+            background: #1f232b;
+            border: 1px solid #00ff00;
+            color: #fff;
+            padding: 12px 20px;
+            font-size: 1rem;
+            border-radius: 5px;
+            outline: none;
+            width: 280px;
+            max-width: 100%;
+        }
+
+        button {
+            background: transparent;
+            color: #00ff00;
+            border: 2px solid #00ff00;
+            padding: 12px 25px;
+            font-size: 1rem;
             font-weight: bold;
-            border: 1px solid #39ff14;
-            box-shadow: 0 0 5px rgba(57, 255, 20, 0.3);
+            cursor: pointer;
+            border-radius: 5px;
+            transition: 0.3s;
+            text-transform: uppercase;
         }
+
+        button:hover {
+            background: #00ff00;
+            color: #000;
+            box-shadow: 0 0 15px #00ff00;
+        }
+
+        /* রেজাল্ট বক্স স্টাইল */
+        .result-section {
+            border-top: 1px solid #333;
+            padding-top: 20px;
+            text-align: left;
+            margin-top: 20px;
+        }
+
+        .word-box {
+            display: inline-block;
+            background: #1f232b;
+            border: 1px solid #00ff00;
+            color: #00ff00;
+            padding: 5px 10px;
+            margin: 5px;
+            border-radius: 3px;
+            font-weight: bold;
+        }
+
         .offensive-section {
-            display: none;
-            margin-top: 30px;
+            border: 1px dashed #ff0000;
+            padding: 15px;
+            margin-top: 25px;
+            border-radius: 5px;
             text-align: left;
         }
-        .toggle-btn {
-            background-color: #0d1117;
-            color: #ff3131;
-            border: 2px solid #ff3131;
-            padding: 10px 20px;
-            font-size: 14px;
+
+        .offensive-title {
+            color: #ff0000;
             font-weight: bold;
-            border-radius: 4px;
-            cursor: pointer;
-            text-transform: uppercase;
-            box-shadow: 0 0 10px rgba(255, 49, 49, 0.4);
-            text-shadow: 0 0 5px #ff3131;
-            transition: all 0.2s ease;
-        }
-        .toggle-btn:hover {
-            background-color: #ff3131;
-            color: #0d1117;
-            box-shadow: 0 0 20px #ff3131;
-        }
-        #offensiveContainer {
-            display: none;
-            margin-top: 15px;
-            border: 2px dashed #ff3131;
-            padding: 15px;
-            border-radius: 4px;
-            background: #1a0d0d;
-            box-shadow: 0 0 10px rgba(255, 49, 49, 0.2);
-        }
-        .offensive-item {
-            border: 1px solid #ff3131 !important;
-            color: #ff3131 !important;
-            text-shadow: 0 0 3px #ff3131 !important;
-            box-shadow: 0 0 5px rgba(255, 49, 49, 0.3) !important;
-        }
-        .ad-bottom {
-            background-color: #161b22;
-            border: 2px dashed #39ff14;
-            text-align: center;
-            padding: 15px;
-            color: #8b949e;
-            margin: 20px;
-            font-size: 14px;
-            border-radius: 8px;
-            box-shadow: 0 0 10px rgba(57, 255, 20, 0.2);
+            font-size: 0.9rem;
+            margin-bottom: 10px;
         }
     </style>
 </head>
 <body>
 
-    <div class="main-layout">
-        <!-- Left Sidebar Ad Banner -->
-        <div class="ad-sidebar" id="adLeft">
-            [Left Sidebar Ad Container]
+    <div class="page-container">
+
+        <!-- ১. উপরের ছোট বিজ্ঞাপনের জায়গা (Top Small Ad) -->
+        <div class="ad-container" id="top-ad">
+            <!-- ⚠️ আপনার Adsterra থেকে নেওয়া Top Banner (728x90) স্ক্রিপ্ট কোডটি ঠিক নিচে পেস্ট করবেন -->
+            
+            <!-- ⚠️ স্ক্রিপ্ট বসানোর আগে দেখার জন্য ডামি টেক্সট (কোড বসালে এটি মুছে দেবেন) -->
+            <div style="width: 320px; height: 50px; background: #222; color: #666; display: flex; justify-content: center; align-items: center; border: 1px solid #333; font-size: 12px;">Top Ad Slot (728x90 / 320x50)</div>
         </div>
 
-        <!-- Main Full Screen Game Area -->
-        <div class="game-area">
+        <!-- মূল অ্যাপ কন্টেন্ট -->
+        <main class="main-content">
             <h1>Word Jumble Solver Pro</h1>
-            <div class="subtitle">Type scrambled letters and solve them in buttery smooth full screen mode</div>
+            <p class="subtitle">Type scrambled letters and solve them in buttery smooth full screen mode</p>
             
             <div class="input-group">
-                <input type="text" id="letters" placeholder="Enter jumbled letters..." maxlength="15">
+                <input type="text" id="jumbleInput" placeholder="Enter jumbled letters...">
                 <button id="solveBtn">Solve It</button>
             </div>
-            
-            <div id="results"></div>
 
-            <div id="offensiveWrapper" class="offensive-section">
-                <button id="toggleOffensiveBtn" class="toggle-btn">Show Offensive Words</button>
-                <div id="offensiveContainer">
-                    <div id="offensiveList" class="word-list"></div>
+            <!-- রেজাল্ট দেখানোর জায়গা -->
+            <div class="result-section">
+                <div style="color: #666; font-size: 0.9rem; margin-bottom: 5px;">4 Letter Words</div>
+                <div id="fourLetterWords">
+                    <!-- জুম্বল শব্দ এখানে আসবে -->
+                </div>
+                
+                <div style="color: #666; font-size: 0.9rem; margin-top: 15px; margin-bottom: 5px;">2 Letter Words</div>
+                <div id="twoLetterWords">
+                    <!-- জুম্বল শব্দ এখানে আসবে -->
                 </div>
             </div>
+
+            <!-- অফেনসিভ ওয়ার্ড সেকশন -->
+            <div class="offensive-section">
+                <div class="offensive-title">HEX OFFENSIVE WORDS</div>
+                <div id="offensiveWords">
+                    <!-- অফেনসিভ শব্দ এখানে আসবে -->
+                </div>
+            </div>
+        </main>
+
+        <!-- ২. নিচের বড় বিজ্ঞাপনের জায়গা (Bottom Large Ad) -->
+        <div class="ad-container" id="bottom-ad">
+            <!-- ⚠️ আপনার Adsterra থেকে নেওয়া Bottom Banner (300x250) স্ক্রিপ্ট কোডটি ঠিক নিচে পেস্ট করবেন -->
+            
+            <!-- ⚠️ স্ক্রিপ্ট বসানোর আগে দেখার জন্য ডামি টেক্সট (কোড বসালে এটি মুছে দেবেন) -->
+            <div style="width: 300px; height: 250px; background: #222; color: #666; display: flex; justify-content: center; align-items: center; border: 1px solid #333; font-size: 12px;">Bottom Ad Slot (300x250)</div>
         </div>
 
-        <!-- Right Sidebar Ad Banner -->
-        <div class="ad-sidebar" id="adRight">
-            [Right Sidebar Ad Container]
-        </div>
     </div>
 
-    <!-- Bottom Banner Ad -->
-    <div class="ad-bottom" id="adBottom">
-        [Bottom Banner Advertisement Place]
-    </div>
-
+    <!-- আপনার আগের জাভাস্ক্রিপ্ট ফাইল লিংক -->
     <script src="popup.js"></script>
 </body>
 </html>
