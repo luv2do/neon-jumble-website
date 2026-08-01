@@ -12,33 +12,69 @@
             margin: 0;
             padding: 0;
             display: flex;
-            flex-direction: column;
-            align-items: center;
+            justify-content: center;
+            align-items: flex-start;
             min-height: 100vh;
         }
 
-        .page-container {
+        /* ৪টি বিজ্ঞাপনের কলাম ও মেইন অ্যাপের গ্লোবাল গ্রিড লেআউট */
+        .layout-wrapper {
+            display: flex;
             width: 100%;
-            max-width: 95%;
-            padding: 20px;
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 10px;
             box-sizing: border-box;
+        }
+
+        /* বাম এবং ডান সাইডবার বিজ্ঞাপনের কলাম (কলাম ১ এবং ৪) */
+        .sidebar-ad-column {
+            width: 160px;
+            min-width: 160px;
+            min-height: 600px;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            padding-top: 100px;
+        }
+
+        /* মাঝখানের মূল কন্টেন্ট এরিয়া (অ্যাপ + টপ/বটম অ্যাড) */
+        .center-content-column {
+            flex-grow: 1;
             display: flex;
             flex-direction: column;
             align-items: center;
+            padding: 0 20px;
+            box-sizing: border-box;
+            width: 100%;
         }
 
+        /* বিজ্ঞাপনের রেসপন্সিভ কন্টেইনার */
         .ad-container {
             width: 100%;
             display: flex;
             justify-content: center;
             align-items: center;
-            margin: 15px 0;
             text-align: center;
+            box-sizing: border-box;
         }
 
+        /* উপরের ছোট বিজ্ঞাপন (কলাম ২) */
+        #top-ad {
+            margin: 10px 0 20px 0;
+            min-height: 50px;
+        }
+
+        /* নিচের বড় বিজ্ঞাপন (কলাম ৩) */
+        #bottom-ad {
+            margin: 30px 0 10px 0;
+            min-height: 250px;
+        }
+
+        /* মূল গেম এরিয়া */
         .main-content {
             width: 100%;
-            max-width: 1200px;
+            max-width: 900px;
             background: #11141a;
             border: 2px solid #00ff00;
             box-shadow: 0 0 15px rgba(0, 255, 0, 0.2);
@@ -110,16 +146,15 @@
             margin-top: 25px;
         }
 
-        /* প্রতিটা অক্ষরের গ্রুপের জন্য ডাইনামিক স্টাইল */
         .word-group {
-            margin-bottom: 20px;
+            margin-bottom: 25px;
         }
 
         .group-title {
-            color: #888;
-            font-size: 1rem;
-            margin-bottom: 8px;
+            font-size: 1.1rem;
+            margin-bottom: 10px;
             font-weight: bold;
+            letter-spacing: 1px;
         }
 
         .word-box {
@@ -150,32 +185,77 @@
             margin-bottom: 15px;
             letter-spacing: 1px;
         }
+
+        /* 📱 মোবাইল এবং আইওএস (iOS) ডিভাইসের জন্য রেসপন্সিভ ব্রেকিং রুলস */
+        @media (max-width: 1024px) {
+            /* স্ক্রিন সাইজ ১০২৪ পিক্সেলের নিচে নামলে দুই পাশের সাইডবার অ্যাড কলাম স্বয়ংক্রিয়ভাবে হাইড হয়ে যাবে */
+            .sidebar-ad-column {
+                display: none !important;
+            }
+            .layout-wrapper {
+                padding: 5px;
+            }
+            .center-content-column {
+                padding: 0 5px;
+            }
+            .main-content {
+                padding: 20px;
+            }
+            h1 {
+                font-size: 2.2rem;
+            }
+        }
     </style>
 </head>
 <body>
 
-    <div class="page-container">
-        <div class="ad-container" id="top-ad"></div>
+    <div class="layout-wrapper">
+        
+        <!-- কলাম ১: বাম পাশের সাইডবার বিজ্ঞাপন (ডেক্সটপে দেখাবে, মোবাইলে হাইড হবে) -->
+        <div class="sidebar-ad-column" id="left-sidebar-ad">
+            <!-- ⚠️ আপনার Adsterra-এর Left Skyscraper (160x600) স্ক্রিপ্ট এখানে বসবে -->
+        </div>
 
-        <main class="main-content">
-            <h1>JUMBLEVERSE</h1>
-            <p class="subtitle">Type scrambled letters and solve them in buttery smooth full screen mode</p>
+        <!-- মাঝখানের এরিয়া (অ্যাপ + টপ ব্যানার + বটম ব্যানার) -->
+        <div class="center-content-column">
             
-            <div class="input-group">
-                <input type="text" id="jumbleInput" placeholder="Enter up to 20 jumbled letters...">
-                <button id="solveBtn">Solve It</button>
+            <!-- কলাম ২: উপরের ছোট বিজ্ঞাপন (মোবাইলে ৩২০x৫০ এ কনভার্ট হবে) -->
+            <div class="ad-container" id="top-ad">
+                <!-- ⚠️ আপনার Adsterra-এর Top Small Banner (728x90) স্ক্রিপ্ট এখানে বসবে -->
             </div>
 
-            <!-- ডাইনামিক রেজাল্ট এরিয়া (২ থেকে ৭ অক্ষরের শব্দ এখানে অটোমেটিক লোড হবে) -->
-            <div class="result-section" id="resultsContainer"></div>
+            <!-- মূল ওয়েব অ্যাপ্লিকেশন -->
+            <main class="main-content">
+                <h1>JUMBLEVERSE</h1>
+                <p class="subtitle">Type scrambled letters and solve them in buttery smooth full screen mode</p>
+                
+                <div class="input-group">
+                    <input type="text" id="jumbleInput" placeholder="Enter up to 20 jumbled letters...">
+                    <button id="solveBtn">Solve It</button>
+                </div>
 
-            <div class="offensive-section">
-                <div class="offensive-title">HEX OFFENSIVE WORDS</div>
-                <div id="offensiveWords"></div>
+                <!-- ৪ স্তরের রেজাল্ট কন্টেইনার -->
+                <div class="result-section" id="resultsContainer"></div>
+
+                <!-- স্লাং এবং হার্ডকোর স্লাং কন্টেইনার -->
+                <div class="offensive-section">
+                    <div class="offensive-title">HEX OFFENSIVE WORDS DETECTED</div>
+                    <div id="offensiveWords"></div>
+                </div>
+            </main>
+
+            <!-- কলাম ৩: নিচের বড় বিজ্ঞাপন (৩০০x২৫০ লার্জ রেক্টেঙ্গেল) -->
+            <div class="ad-container" id="bottom-ad">
+                <!-- ⚠️ আপনার Adsterra-এর Bottom Large Banner (300x250) স্ক্রিপ্ট এখানে বসবে -->
             </div>
-        </main>
 
-        <div class="ad-container" id="bottom-ad"></div>
+        </div>
+
+        <!-- কলাম ৪: ডান পাশের সাইডবার বিজ্ঞাপন (ডেক্সটপে দেখাবে, মোবাইলে হাইড হবে) -->
+        <div class="sidebar-ad-column" id="right-sidebar-ad">
+            <!-- ⚠️ Ihre Adsterra-এর Right Skyscraper (160x600) স্ক্রিপ্ট এখানে বসবে -->
+        </div>
+
     </div>
 
     <script src="popup.js"></script>

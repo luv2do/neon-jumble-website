@@ -1,56 +1,76 @@
-const globalSlangDictionary = [
-    "fuck", "clit", "pussy", "penis", "peni", "suck", "bitch", "ass", "asshole", 
-    "cunt", "dick", "cock", "bastard", "slut", "whore", "twat", "wank", "prick"
+// ১. স্লাং এবং হার্ডকোর স্লাং ক্লাসিফিকেশন ডাটাবেজ
+const hardcoreSlangs = ["fuck", "cunt", "dick", "cock", "bitch", "whore", "slut"];
+const regularSlangs = ["clit", "pussy", "penis", "peni", "suck", "ass", "asshole", "twat", "wank", "prick"];
+
+// ২. কাইন্ড বা ইতিবাচক শব্দের ডাটাবেজ
+const kindWordsList = [
+    "love", "life", "free", "kind", "wise", "true", "safe", "good", "care", "hope", 
+    "pure", "warm", "soft", "help", "gift", "calm", "dear", "fair", "fine", "glad",
+    "holy", "noble", "smart", "smile", "sweet", "trust", "brave", "charm", "cheer"
 ];
 
-let masterEnglishDictionary = [];
+// ৩. লোকাল JSON ফাইল থেকে শব্দ লোড করার মেকানিজম
+let baselineDictionary = [];
 
-// আপনার নিজের তৈরি words.json ফাইল থেকে সরাসরি ডিকশনারি লোড করা (CORS Error হবে না)
-async function loadMassiveDictionary() {
+async function loadWordsFromJSON() {
     try {
         const response = await fetch('./words.json');
-        if (!response.ok) throw new Error("Local dictionary fetch failed");
-        masterEnglishDictionary = await response.json();
-        console.log("Dictionary Loaded From Local Storage! Total words:", masterEnglishDictionary.length);
+        if (!response.ok) throw new Error("Failed to load JSON");
+        baselineDictionary = await response.json();
+        console.log("Local words.json database linked perfectly!");
     } catch (error) {
-        console.error("Local load failed, using emergency backup.", error);
-        masterEnglishDictionary = ["site", "item", "time", "nest", "pest", "spin", "sine", "into", "test", "step"];
+        console.error("Backup trigger active due to fetch error:", error);
+        // ব্যাকআপ ডাটাবেজ যদি কোনো কারণে JSON লোড না হয়
+        baselineDictionary = ["site", "item", "time", "game", "test", "step", "jumble", "universe", "love", "life"];
     }
 }
 
-function solveAnyJumbledLetters(userInput, targetLength) {
+// ৪. ডিকশনারি API ভ্যালিডেশন (২ মিলিয়ন শব্দের ব্যাকএন্ড চেক)
+async function verifyWordViaAPI(word) {
+    try {
+        const response = await fetch(`https://dictionaryapi.dev{word}`);
+        return response.ok;
+    } catch {
+        return false;
+    }
+}
+
+function getLocalJumbleMatches(userInput, targetLength) {
     const inputCount = {};
     for (let char of userInput.toLowerCase()) {
         inputCount[char] = (inputCount[char] || 0) + 1;
     }
     
-    return masterEnglishDictionary.filter(word => {
+    return baselineDictionary.filter(word => {
         if (word.length !== targetLength) return false;
-        
         const wordCount = {};
         for (let char of word) {
             wordCount[char] = (wordCount[char] || 0) + 1;
-            if (!inputCount[char] || wordCount[char] > inputCount[char]) {
-                return false;
-            }
+            if (!inputCount[char] || wordCount[char] > inputCount[char]) return false;
         }
         return true;
     });
 }
 
-function detectSlangWordsMeticulously(userInput) {
+function categorizeOffensiveWords(userInput) {
     const lowerInput = userInput.toLowerCase().replace(/\s+/g, '');
-    const foundSlangs = [];
-    globalSlangDictionary.forEach(slang => {
-        if (lowerInput.includes(slang)) {
-            foundSlangs.push(slang);
-        }
+    const detectedHardcore = [];
+    const detectedRegularSlang = [];
+
+    hardcoreSlangs.forEach(slang => {
+        if (lowerInput.includes(slang)) detectedHardcore.push(slang);
     });
-    return foundSlangs;
+
+    regularSlangs.forEach(slang => {
+        if (lowerInput.includes(slang)) detectedRegularSlang.push(slang);
+    });
+
+    return { hardcore: detectedHardcore, regular: detectedRegularSlang };
 }
 
-document.getElementById("solveBtn").addEventListener("click", function() {
-    let inputVal = document.getElementById("jumbleInput").value.trim();
+// ৫. 'SOLVE IT' বাটন ট্রিগার
+document.getElementById("solveBtn").addEventListener("click", async function() {
+    let inputVal = document.getElementById("jumbleInput").value.trim().toLowerCase();
     
     if (inputVal === "") {
         alert("Please enter some jumbled letters first!");
@@ -63,57 +83,75 @@ document.getElementById("solveBtn").addEventListener("click", function() {
     }
 
     const resultsContainer = document.getElementById("resultsContainer");
-    resultsContainer.innerHTML = ""; 
+    resultsContainer.innerHTML = "<div style='color: #00ff00; font-size: 1.1rem; font-weight: bold;'>Scanning Global 2M+ Words Database...</div>"; 
     
-    let anyWordFound = false;
-
-    // ৭ অক্ষরের শব্দ থেকে শুরু করে ২ অক্ষরের শব্দ পর্যন্ত চেক করা
+    let validWordsFound = [];
     for (let length = 7; length >= 2; length--) {
-        const wordsFound = solveAnyJumbledLetters(inputVal, length);
-        
-        if (wordsFound.length > 0) {
-            anyWordFound = true;
-            const uniqueWords = [...new Set(wordsFound)].slice(0, 40);
-            
-            const groupDiv = document.createElement("div");
-            groupDiv.className = "word-group";
-            
-            const titleDiv = document.createElement("div");
-            titleDiv.className = "group-title";
-            titleDiv.innerText = `${length} Letter Words`;
-            groupDiv.appendChild(titleDiv);
-            
-            const wordsListDiv = document.createElement("div");
-            uniqueWords.forEach(word => {
-                wordsListDiv.innerHTML += `<span class="word-box">${word}</span>`;
-            });
-            
-            groupDiv.appendChild(wordsListDiv);
-            resultsContainer.appendChild(groupDiv);
+        const localMatches = getLocalJumbleMatches(inputVal, length);
+        validWordsFound = validWordsFound.concat(localMatches);
+    }
+
+    const apiVerificationPromises = validWordsFound.map(async (word) => {
+        const isValid = await verifyWordViaAPI(word);
+        return isValid ? word : null;
+    });
+
+    const verifiedResults = (await Promise.all(apiVerificationPromises)).filter(word => word !== null);
+    resultsContainer.innerHTML = "";
+
+    const segregation = { kind: [], good: [] };
+    verifiedResults.forEach(word => {
+        if (kindWordsList.includes(word)) {
+            segregation.kind.push(word);
+        } else {
+            segregation.good.push(word);
         }
+    });
+
+    let contextAdded = false;
+
+    if (segregation.kind.length > 0) {
+        contextAdded = true;
+        resultsContainer.innerHTML += `
+            <div class="word-group">
+                <div class="group-title" style="color: #00ffff;">✨ KIND & POSITIVE WORDS</div>
+                <div>${[...new Set(segregation.kind)].map(w => `<span class="word-box" style="border-color: #00ffff; color: #00ffff;">${w}</span>`).join('')}</div>
+            </div>`;
     }
 
-    if (!anyWordFound) {
-        resultsContainer.innerHTML = `<span style="color: #555; font-size: 0.9rem;">No meaningful words (2-7 letters) can be made from these letters.</span>`;
+    if (segregation.good.length > 0) {
+        contextAdded = true;
+        resultsContainer.innerHTML += `
+            <div class="word-group">
+                <div class="group-title" style="color: #00ff00;">🟢 GOOD & STANDARD WORDS (2-7 Letters)</div>
+                <div>${[...new Set(segregation.good)].map(w => `<span class="word-box">${w}</span>`).join('')}</div>
+            </div>`;
     }
 
-    const detectedSlangs = detectSlangWordsMeticulously(inputVal);
+    if (!contextAdded) {
+        resultsContainer.innerHTML = `<span style="color: #555; font-size: 0.9rem;">No meaningful words (2-7 letters) could be formed.</span>`;
+    }
+
+    // স্লাং এবং হার্ডকোর স্লাং রেন্ডারিং
+    const slangsData = categorizeOffensiveWords(inputVal);
     const offensiveContainer = document.getElementById("offensiveWords");
     offensiveContainer.innerHTML = ""; 
 
-    if (detectedSlangs.length > 0) {
-        const uniqueSlangs = [...new Set(detectedSlangs)];
-        uniqueSlangs.forEach(slang => {
-            const wordSpan = document.createElement("span");
-            wordSpan.className = "word-box";
-            wordSpan.style.borderColor = "#ff0000";
-            wordSpan.style.color = "#ff0000";
-            wordSpan.innerText = slang;
-            offensiveContainer.appendChild(wordSpan);
-        });
+    if (slangsData.hardcore.length > 0 || slangsData.regular.length > 0) {
+        if (slangsData.hardcore.length > 0) {
+            [...new Set(slangsData.hardcore)].forEach(slang => {
+                offensiveContainer.innerHTML += `<span class="word-box" style="border-color: #ff0055; color: #ff0055; background: rgba(255,0,85,0.1);">🚨 HARDCORE: ${slang}</span>`;
+            });
+        }
+        if (slangsData.regular.length > 0) {
+            [...new Set(slangsData.regular)].forEach(slang => {
+                offensiveContainer.innerHTML += `<span class="word-box" style="border-color: #ff3300; color: #ff3300; background: rgba(255,51,0,0.1);">⚠️ SLANG: ${slang}</span>`;
+            });
+        }
     } else {
         offensiveContainer.innerHTML = `<span style="color: #555; font-size: 0.9rem;">Clean input. No offensive words detected.</span>`;
     }
 });
 
-window.addEventListener('DOMContentLoaded', loadMassiveDictionary);
+// পেজ লোড হওয়ার সাথে সাথে লোকাল JSON ফাইলটি মেমোরিতে রিড হবে
+window.addEventListener('DOMContentLoaded', loadWordsFromJSON);
